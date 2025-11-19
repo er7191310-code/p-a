@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Painel Digital — ESCOLA EZEQUIEL RUIZ II</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;width:100%}
+  body{
+    font-family: Arial, Helvetica, sans-serif;
+    background: url("imagens/logos/fundo.jpg") no-repeat center center fixed;
+    background-size: cover;
+    color:#fff;
+  }
+
+  .overlay{
+    position:fixed;inset:0;
+    background: rgba(0,0,0,0.35);
+    display:flex;align-items:flex-start;justify-content:center;
+    padding:18px;
+  }
+  .panel{
+    width:95%;max-width:1280px;
+    max-height:calc(100vh - 36px);
+    background: rgba(255,255,255,0.12);
+    border-radius:12px;
+    box-shadow:0 12px 30px rgba(0,0,0,0.45);
+    color:#fff;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+
+  .header{
+    display:flex;align-items:center;gap:14px;
+    padding:18px 19px;background:linear-gradient(90deg,#0b63a6,#0a83c6);
+    flex:0 0 auto;
+  }
+  .header img{height:72px;width:72px;object-fit:contain;border-radius:8px;background:#fff;padding:6px}
+  .titles h1{font-size:20px;margin-bottom:4px}
+  .titles p{margin:0;font-size:13px;opacity:0.95}
+
+  #display-date {font-size: 24px;font-weight: bold;color: #ffeb3b;}
+  #display-time {font-size: 20px;font-weight: 700;color: #ffffff;text-shadow: 1px 1px 4px rgba(0,0,0,0.4);}
+
+  .main{display:flex;gap:18px;padding:16px;flex:1 1 auto;overflow:auto}
+  .carousel-area{flex:1;display:flex;flex-direction:column;gap:12px}
+  .carousel{flex:0 0 auto;position:relative;min-height:320px}
+  .side{width:320px;display:flex;flex-direction:column;gap:12px;flex:0 0 auto}
+
+  .section{position:relative;padding:14px}
+  .card{
+    background:rgba(255,255,255,0.95);
+    color:#083044;border-radius:10px;padding:12px;height:100%;overflow:hidden;
+  }
+
+  #menu-grid{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:10px;
+    align-items:start;
+  }
+  .menu-day{
+    background:#fff;
+    color:#083044;
+    border-radius:10px;
+    padding:12px;
+    min-height:150px;
+    box-shadow:0 6px 12px rgba(5,30,50,0.06);
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+  }
+  .menu-day h4{margin:0 0 8px 0;font-size:16px;background:#0b63a6;color:#fff;padding:6px;border-radius:8px}
+  .menu-item{font-size:13px;margin-bottom:6px;line-height:1.2}
+
+  @media(max-width:1100px){ #menu-grid{grid-template-columns:repeat(3,1fr);} .side{width:260px} }
+  @media(max-width:800px){ #menu-grid{grid-template-columns:repeat(2,1fr);} .side{width:220px} }
+  @media(max-width:520px){ #menu-grid{grid-template-columns:1fr;} .side{width:100%} }
+
+  /* 🎂 Aniversariantes com imagem redonda e efeito suave */
+  .birthday{
+    display:flex;gap:12px;align-items:center;padding:8px;background:#fff;border-radius:8px;color:#083044;
+  }
+  .birthday img{
+    width:96px;height:96px;border-radius:50%;
+    object-fit:cover;border:4px solid #0b63a6;
+    box-shadow:0 4px 10px rgba(0,0,0,0.2);
+    transition:transform 0.4s ease, box-shadow 0.4s ease;
+  }
+  .birthday img:hover{
+    transform:scale(1.08);
+    box-shadow:0 6px 16px rgba(0,0,0,0.35);
+  }
+  .birthday .info .name{font-weight:700;font-size:15px}
+  .birthday .info .class{font-size:13px;color:#2f5970}
+
+  .notice,.event{background:#fff;padding:10px;border-radius:8px;margin-bottom:10px;color:#083044}
+
+  /* --- PREVISÃO DO TEMPO ANIMADA E DETALHADA --- */
+  .info-card{
+    /* default gradient — will be updated dynamically pelo JS conforme condição */
+    background: linear-gradient(180deg,#0a83c6,#0b63a6);
+    color:#fff;border-radius:14px;padding:12px 14px;text-align:center;font-weight:700;
+    box-shadow:0 10px 30px rgba(0,0,0,0.28);position:relative;overflow:hidden;
+    transition:background 0.6s ease, box-shadow 0.6s ease, transform 0.3s ease;
+  }
+  .info-card:hover{ transform: translateY(-4px); box-shadow:0 18px 40px rgba(0,0,0,0.35); }
+
+  .weather-top{
+    display:flex;align-items:center;gap:12px;justify-content:center;
+  }
+  .weather-icon{
+    font-size:56px;
+    line-height:1;
+    filter: drop-shadow(0 6px 12px rgba(0,0,0,0.35));
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+
+  .weather-main{ text-align:left; }
+  .weather-main .temp{ font-size:28px; font-weight:800; margin-bottom:4px; color: #fff; text-shadow:0 2px 10px rgba(0,0,0,0.35) }
+  .weather-main .cond{ font-size:14px; opacity:0.95 }
+
+  .weather-details{
+    margin-top:8px;
+    font-size:14px;
+    line-height:1.5;
+    color: rgba(255,255,255,0.95);
+  }
+  .weather-details b{color:#fff}
+
+  .weather-updated{
+    margin-top:8px;font-size:12px;color:rgba(255,255,255,0.9);
+  }
+
+  /* small badges inside the card */
+  .weather-badges{display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+  .badge{background:rgba(255,255,255,0.12);padding:6px 10px;border-radius:999px;font-size:13px;color:#fff;backdrop-filter:blur(4px)}
+
+  .footer{
+    flex:0 0 auto;
+    padding:10px 14px;
+    background:linear-gradient(90deg,#0b63a6,#0a83c6);
+    color:#fff;font-size:15px;text-align:center;font-weight:bold;border-top:6px solid #ffeb3b;
+    display:flex;align-items:center;justify-content:center;gap:12px;
+  }
+
+  #refresh-btn {background:#ffeb3b;color:#083044;border:none;padding:8px 14px;border-radius:8px;font-weight:700;cursor:pointer}
+  #refresh-btn:hover{background:#fff066}
+</style>
+</head>
+<body>
+  <div class="overlay">
+    <div class="panel">
+      <div class="header">
+        <img src="imagens/logos/logo.jpeg" alt="Logo da Escola" onerror="this.style.display='none'">
+        <div class="titles">
+          <h1>ESCOLA EZEQUIEL RUIZ II — BELA VISTA / MANACAPURU-AM</h1>
+          <p style="color:#ffeb3b">A educação começa em casa, a escola lápida. "Equipe Ezequiel Ruiz"</p>
+        </div>
+        <div style="margin-left:auto;text-align:right;">
+          <div id="display-date">--/--/----</div>
+          <div id="display-time">--:--:--</div>
+        </div>
+      </div>
+
+      <div class="main">
+        <div class="carousel-area">
+          <div class="carousel">
+            <div id="section-notices" class="section">
+              <div class="card">
+                <h2>📢 Avisos/Informativos</h2>
+                <div id="notices"></div>
+              </div>
+            </div>
+
+            <div id="section-events" class="section" style="display:none">
+              <div class="card">
+                <h2>🗓️ Eventos</h2>
+                <div id="events"></div>
+              </div>
+            </div>
+
+            <div id="section-menu" class="section" style="display:none">
+              <div class="card">
+                <h2>📋 Cardápio Semanal 17/11 à 21/11 </h2>
+                <div id="menu"><div id="menu-grid"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PREVISÃO DO TEMPO ANIMADA e DETALHADA (apenas aqui mexi) -->
+          <div class="info-card" id="info-card" role="region" aria-label="Previsão do tempo">
+            <div class="weather-top">
+              <div class="weather-icon" id="weather-icon">⛅</div>
+              <div class="weather-main">
+                <div class="temp" id="weather-temp">--°C</div>
+                <div class="cond" id="weather-cond">Carregando...</div>
+              </div>
+            </div>
+
+            <div class="weather-details" id="weather-details">
+              <!-- vento, umidade, sensação aparecem aqui -->
+            </div>
+
+            <div class="weather-badges" id="weather-badges" aria-hidden="true"></div>
+            <div class="weather-updated" id="weather-updated">Atualizando...</div>
+          </div>
+        </div>
+
+        <aside class="side">
+          <div class="card">
+            <h3>🎂 Aniversariantes do Dia - Alunos</h3>
+            <div id="birthdays-students"></div>
+          </div>
+
+          <div class="card">
+            <h3>👩‍🏫 Aniversariantes do Dia - Funcionários</h3>
+            <div id="birthdays-teachers"></div>
+          </div>
+        </aside>
+      </div>
+
+      <div class="footer" id="footer-update">
+        📅 Última atualização do painel: <span id="update-date">--/--/----</span>
+        <button id="refresh-btn" onclick="location.reload()">🔄 Atualizar Agora</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(async function(){
+  const SECTIONS = ['section-notices','section-events','section-menu'];
+  let currentSection = 0;
+  const ROTATE_MS = 10000;
+  const FALLBACK = 'img/LOGOS/padrao.png';
+
+  const DATA = {
+    notices:[{title:'BINGO DO TEMPO INTEGRAL (DATA: 25/11 HORA: 09h05min', 
+    text:'🌞“PRÊMIOS”, “1 BOLO, 1 REFRIGERANTE, 1 FRANGO ASSADO”, “VALOR R$2,00”,.'}],
+    
+    events:[{title:'Campeonato de Leitura - Viajando nos caminhos da Leitura e nas ondas da produção', desc:'11/11.'}],
+    menu:[
+      {day:'Segunda-feira', morning:'Suco de acerola, Biscoito Salgado, Fruta: Banana prata', lunch:'Isca de carne, Arroz branco, Macarrão, Farofa, salada crua', afternoon:'Suco de abacaxi, pão com queijo, fruta: Maçã'},
+      {day:'Terça-feira', morning:'Mingau de Tapioca', lunch:'Guisado de frango, Macarrão Parafuso, farinha amarela, suco de fruta', afternoon:'Vitamina de banana com Biscoito'},
+      {day:'Quarta-feira', morning:'Pão de forma c/ queijo e suco de fruta', lunch:'Macarronada de carne moída com suco de goiaba', afternoon:'Pão com carne moída e suco de goiaba, Fruta: Laranja'},
+      {day:'Quinta-feira', morning:'Suco de goiaba e farofa de ovo', lunch:'Frango desfiado, Arroz, Feijão, Salada', afternoon:'Café com Leite, pão com queijo'},
+      {day:'Sexta-feira', morning:'Suco de goiaba e farofa de carne', lunch:'______', afternoon:'Suco de goiaba e farofa de carne'}
+    ],
+    students:[
+      {name:'Elane Queiroz', class:'2º Ano', photo:'imagens/alunos/elane.jpeg', birthday:'17/11'},
+      {name:'Jadson Kauê', class:'2º Ano', photo:'imgens/alunos/jadson kaue.jpeg', birthday:'27/11'},
+      {name:'Renato Araújo', class:'2º Ano (multi)', photo:'imagens/alunos/renato.jpeg', birthday:'17/11'},
+      {name:'Ana Liz', class:'4º Ano', photo:'imagens/alunos/ana liz.jpeg', birthday:'23/11'},
+      {name:'Elizeu Juliano', class:'4º Ano', photo:'imagens/alunos/elizeu.jpeg', birthday:'24/11'},
+      {name:'Joaquim Queiroz', class:'5º Ano B', photo:'imagens/alunos/joaquim.jpeg', birthday:'21/11'},
+      {name:'Isabella Vanessa', class:'6º Ano A', photo:'imagens/alunos/isabella vanessa.jpeg', birthday:'21/11'},
+      {name:'Juliana de Freitas', class:'6º Ano A', photo:'imagens/alunos/juliana.jpeg.', birthday:'28/11'},
+      {name:'Paulo Henrique Trindade', class:'6º Ano A', photo:'imagens/alunos/paulo.jpeg', birthday:'15/11'},
+      {name:'Gabriel Silva', class:'7º Ano', photo:'imagens/alunos/jadson kaue.jpeg', birthday:'28/11'},
+      {name:'Johnny Petrick', class:'7º Ano', photo:'imagens/alunos/jhonny.jpeg', birthday:'21/11'},
+      {name:'Gabriel Torres', class:'8º Ano', photo:'imagens/alunos/gabriel.jpeg', birthday:'19/11'},
+      {name:'Lorrana Nascimento', class:'8º Ano', photo:'imagens/alunos/lorrana.jpeg', birthday:'17/11'},
+      {name:'Rannata Tanaka', class:'2º Ano', photo:'imagens/alunos/jadson kaue.jpeg', birthday:'28/11'},
+      {name:'Ticiane Reis', class:'8º Ano', photo:'imagens/alunos/ticiane.jpeg', birthday:'17/11'},
+      {name:'Ivanilson Freitas', class:'9º Ano', photo:'imagens/alunos/ivanilson.jpeg', birthday:'18/11'},
+      {name:'Maria Isabelle Tavares', class:'9º Ano', photo:'imagens/alunos/maria isabelle.jpeg', birthday:'28/11'},
+      {name:'Milena Gondim', class:'9º Ano', photo:'imagens/alunos/milena.jpeg', birthday:'22/11'}
+    ],
+    teachers:[
+      {name:'Profª. Alcenir Alves', class:'Feliz Aniversário', photo:'imagens/funcionarios/alcenir.jpeg', birthday:'25/11'},
+      {name:'Profª. Gleice Adames', class:'Feliz Aniversário', photo:'imagens/funcionarios/gleice.jpeg', birthday:'26/12'},
+      {name:'Eunice Pereira', class:'Feliz Aniversário', photo:'imagens/funcionarios/eunice.jpeg', birthday:'18/12'},
+      {name:'Francisco Odeli Bastos', class:'Feliz Aniversário', photo:'imagens/funcionarios/odeli.jpeg', birthday:'30/12'},
+      {name:'Natanael Mota', class:'Feliz Aniversário', photo:'imagens/funcionarios/natan.jpeg', birthday:'25/12'}
+    ]
+  };
+
+  function renderMenuGrid(){
+    const grid = document.getElementById('menu-grid');
+    grid.innerHTML = DATA.menu.map(d => `
+      <div class="menu-day">
+        <h4>${d.day}</h4>
+        <div class="menu-item"><strong>☀️ Lanche da Manhã:</strong> ${d.morning}</div>
+        <div class="menu-item"><strong>🍛 Almoço:</strong> ${d.lunch}</div>
+        <div class="menu-item"><strong>🌇 Lanche da Tarde:</strong> ${d.afternoon}</div>
+      </div>
+    `).join('');
+  }
+
+  function getTodayBirthdayList(list){
+    const today = new Date().toLocaleDateString('pt-BR').slice(0,5);
+    return list.filter(p => p.birthday === today);
+  }
+
+  function renderList(id, list){
+    const container = document.getElementById(id);
+    if(list.length === 0){
+      container.innerHTML = `<div class="birthday"><img src="${FALLBACK}"><div class="info"><div class="name">Nenhum aniversariante hoje 🎈</div></div></div>`;
+      return;
+    }
+    container.innerHTML = list.map(b => `
+      <div class="birthday">
+        <img src="${b.photo}" onerror="this.src='${FALLBACK}'">
+        <div class="info"><div class="name">${b.name}</div><div class="class">${b.class}</div></div>
+      </div>
+    `).join('');
+  }
+
+  function rotateBirthdaysSimple(id){
+    const container = document.getElementById(id);
+    const items = container.querySelectorAll('.birthday');
+    if(items.length <= 1) return;
+    let idx = 0;
+    setInterval(()=>{
+      items.forEach((it,i)=>it.style.display = i===idx ? 'flex' : 'none');
+      idx = (idx + 1) % items.length;
+    },4000);
+  }
+
+  function renderNoticesAndEvents(){
+    document.getElementById('notices').innerHTML = DATA.notices.map(n=>`<div class="notice"><strong>${n.title}</strong><div>${n.text}</div></div>`).join('');
+    document.getElementById('events').innerHTML = DATA.events.map(e=>`<div class="event"><strong>${e.title}</strong><div>${e.desc}</div></div>`).join('');
+  }
+
+  function updateDate(){
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('pt-BR');
+    const timeStr = now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    document.getElementById('display-date').textContent = dateStr;
+    document.getElementById('display-time').textContent = timeStr;
+    document.getElementById('update-date').textContent = dateStr;
+  }
+
+  function carousel(){
+    SECTIONS.forEach((id,i)=>{
+      const el=document.getElementById(id);
+      el.style.display=(i===currentSection)?'block':'none';
+    });
+    currentSection=(currentSection+1)%SECTIONS.length;
+  }
+
+  // mapa clima -> ícone e descrição curta
+  function mapWeather(code){
+    if(code === 0) return {icon:'☀️', label:'Ensolarado', theme:'sunny'};
+    if([1,2].includes(code)) return {icon:'🌤️', label:'Ensolarado', theme:'partly'};
+    if(code === 3) return {icon:'☁️', label:'Nublado', theme:'cloudy'};
+    if([45,48].includes(code)) return {icon:'🌫️', label:'Neblina', theme:'fog'};
+    if([51,53,55,56,57].some(x=>x===code)) return {icon:'🌦️', label:'Chuvisco', theme:'rain'};
+    if([61,63,65].includes(code)) return {icon:'🌧️', label:'Chuva', theme:'rain'};
+    if([80,81,82].includes(code)) return {icon:'🌧️', label:'Pancadas de chuva', theme:'rain'};
+    if([95,96,99].includes(code)) return {icon:'⛈️', label:'Tempestade', theme:'storm'};
+    return {icon:'🌡️', label:'Instável', theme:'default'};
+  }
+
+  // aplica degradê conforme tema
+  function applyWeatherTheme(theme){
+    const el = document.getElementById('info-card');
+    if(!el) return;
+    switch(theme){
+      case 'sunny':
+        el.style.background = 'linear-gradient(180deg, #ffd97a, #ffb347)'; break;
+      case 'partly':
+        el.style.background = 'linear-gradient(180deg, #cfe9ff, #8fd3ff)'; break;
+      case 'cloudy':
+        el.style.background = 'linear-gradient(180deg, #d6d6d6, #9ea7b1)'; break;
+      case 'rain':
+        el.style.background = 'linear-gradient(180deg, #6fb3ff, #2b83d6)'; break;
+      case 'storm':
+        el.style.background = 'linear-gradient(180deg, #6c6f73, #2b2f33)'; break;
+      case 'fog':
+        el.style.background = 'linear-gradient(180deg, #e9eef2, #cfd9e3)'; break;
+      default:
+        el.style.background = 'linear-gradient(180deg,#0a83c6,#0b63a6)'; break;
+    }
+  }
+
+  // pega direção do vento em texto
+  function windDir(deg){
+    if(deg===null || deg===undefined) return '';
+    const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+    const idx = Math.round(((deg %= 360) < 0 ? deg + 360 : deg) / 22.5) % 16;
+    return dirs[idx];
+  }
+
+  // Função que atualiza a previsão (usa open-meteo com hourly=relativehumidity_2m)
+  async function updateWeather(){
+    try{
+      const lat = -3.2909, lon = -60.6216;
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=relativehumidity_2m&timezone=America%2FManaus`;
+      const res = await fetch(url);
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const w = data.current_weather; // {temperature, windspeed, winddirection, time, weathercode}
+      // encontrar índice da hora atual nos hourly.time
+      let humidity = null;
+      try{
+        if(data.hourly && data.hourly.time && data.hourly.relativehumidity_2m){
+          const idx = data.hourly.time.indexOf(w.time);
+          if(idx >= 0) humidity = data.hourly.relativehumidity_2m[idx];
+        }
+      }catch(e){ humidity = null; }
+
+      const mapped = mapWeather(w.weathercode);
+      const icon = mapped.icon;
+      const condLabel = mapped.label;
+      const theme = mapped.theme;
+
+      const temp = Math.round(w.temperature);
+      const wind = Math.round(w.windspeed);
+      const winddir = w.winddirection !== undefined ? windDir(w.winddirection) : '';
+      // estimativa de sensação: aproximação simples (difícil ser exata sem mais dados)
+      const feels = humidity !== null ? Math.round(temp + (humidity - 50)/10) : temp;
+
+      // atualiza DOM
+      document.getElementById('weather-icon').textContent = icon;
+      document.getElementById('weather-temp').textContent = `${temp}°C`;
+      document.getElementById('weather-cond').textContent = `${condLabel}`;
+      document.getElementById('weather-details').innerHTML = `
+        <b>💨 Vento:</b> ${wind} km/h ${winddir ? '('+winddir+')' : ''}<br>
+        <b>💧 Umidade:</b> ${humidity !== null ? humidity + '%' : '—'}<br>
+        <b>🌡️ Sensação (estim.):</b> ${feels}°C
+      `;
+      // badges (pequenos resumos visuais)
+      const badgesEl = document.getElementById('weather-badges');
+      badgesEl.innerHTML = `
+        <span class="badge">${icon} ${condLabel}</span>
+        <span class="badge">🌡 ${temp}°C</span>
+        <span class="badge">💧 ${humidity !== null ? humidity+'%' : '—'}</span>
+        <span class="badge">💨 ${wind} km/h</span>
+      `;
+
+      const timeStr = new Date(w.time).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+      document.getElementById('weather-updated').textContent = `Atualizado às ${timeStr} — próxima atualização em 30 min`;
+
+      // atualiza degradê / tema
+      applyWeatherTheme(theme);
+
+    }catch(err){
+      console.error('weather error', err);
+      document.getElementById('weather-icon').textContent = '⚠️';
+      document.getElementById('weather-temp').textContent = '--';
+      document.getElementById('weather-cond').textContent = 'Erro ao carregar';
+      document.getElementById('weather-details').textContent = 'Não foi possível obter a previsão do tempo.';
+      document.getElementById('weather-badges').innerHTML = '';
+      document.getElementById('weather-updated').textContent = '';
+      // manter um degradê de fallback
+      applyWeatherTheme('default');
+    }
+  }
+
+  // Inicialização (mantive tudo igual — só acrescentei as chamadas corretas)
+  function init(){
+    renderNoticesAndEvents();
+    renderMenuGrid();
+
+    const todayStudents = getTodayBirthdayList(DATA.students);
+    const todayTeachers = getTodayBirthdayList(DATA.teachers);
+
+    renderList('birthdays-students', todayStudents);
+    renderList('birthdays-teachers', todayTeachers);
+
+    rotateBirthdaysSimple('birthdays-students');
+    rotateBirthdaysSimple('birthdays-teachers');
+
+    updateDate();
+    setInterval(updateDate,1000);
+
+    carousel();
+    setInterval(carousel, ROTATE_MS);
+
+    // previsão: primeira carga e depois a cada 30 minutos
+    updateWeather();
+    setInterval(updateWeather, 30 * 60 * 1000);
+
+    // manter menu e avisos renderizados
+    renderMenuGrid();
+    renderNoticesAndEvents();
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+
+})();
+</script>
+</body>
+</html>
